@@ -1,0 +1,7 @@
+{
+  "name": "cultur-quiz",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
