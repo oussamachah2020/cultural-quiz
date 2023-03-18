@@ -4,6 +4,23 @@ import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
 import { auth } from "../../firebase";
 import "./register.css";
+// import "./login.css";
+import Box from "@mui/material/Box";
+import Modal from "@mui/material/Modal";
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "#fff",
+  border: "2px solid #000",
+  borderRadius: "10px",
+  color: "#000",
+  boxShadow: 24,
+  p: 4,
+};
 
 type Props = {};
 
@@ -17,6 +34,12 @@ function Login({}: Props) {
     email: "",
     password: "",
   });
+
+  const [restorationEmail, setRestorationEmail] = useState<string>("");
+
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const history = useHistory();
 
@@ -41,6 +64,20 @@ function Login({}: Props) {
       .catch((err) => {
         toast(err);
       });
+  };
+
+  const resetPassword = () => {
+    if (!restorationEmail) {
+      toast.error("Please Enter the email to send you a restoration link", {
+        toastId: "error1",
+      });
+    }
+    auth.sendPasswordResetEmail(restorationEmail).then(() => {
+      toast.success(`Restoration Link has been sent to ${restorationEmail}`, {
+        toastId: "success1",
+      });
+      setOpen(false);
+    });
   };
 
   return (
@@ -74,6 +111,12 @@ function Login({}: Props) {
             ></IonInput>
           </IonItem>
         </IonList>
+        <p
+          style={{ textDecoration: "underline", cursor: "pointer" }}
+          onClick={handleOpen}
+        >
+          Forget You Password?
+        </p>
         <IonButton type="submit" expand="block">
           Sign In
         </IonButton>
@@ -81,6 +124,29 @@ function Login({}: Props) {
           Don't have an account yet? <Link to={"/register"}>Sign Up</Link>
         </p>
       </form>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <p>Enter You email</p>
+          <IonItem>
+            <IonInput
+              type="email"
+              value={restorationEmail}
+              onIonChange={(e: CustomEvent) => {
+                setRestorationEmail((e.target as HTMLInputElement).value);
+              }}
+              placeholder="example@gmail.com"
+            ></IonInput>
+          </IonItem>
+          <IonButton type="submit" expand="block" onClick={resetPassword}>
+            Sign In
+          </IonButton>
+        </Box>
+      </Modal>
     </div>
   );
 }
