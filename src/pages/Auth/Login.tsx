@@ -2,7 +2,7 @@ import { IonButton, IonInput, IonItem, IonLabel, IonList } from "@ionic/react";
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
-import { auth } from "../../firebase";
+import { auth, signWithGoogle } from "../../firebase";
 import "./register.css";
 // import "./login.css";
 import Box from "@mui/material/Box";
@@ -80,6 +80,12 @@ function Login({}: Props) {
     });
   };
 
+  const currentUser = auth.currentUser;
+
+  if (currentUser) {
+    history.push("/game");
+  }
+
   return (
     <div>
       <form className="registration-form" onSubmit={signIn}>
@@ -147,6 +153,9 @@ function Login({}: Props) {
           </IonButton>
         </Box>
       </Modal>
+      <IonButton type="submit" expand="block" onClick={signWithGoogle}>
+        Sign In with google
+      </IonButton>
     </div>
   );
 }
