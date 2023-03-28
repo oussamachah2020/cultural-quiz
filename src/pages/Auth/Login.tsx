@@ -1,19 +1,30 @@
 import {
   IonButton,
+  IonButtons,
+  IonContent,
+  IonFooter,
+  IonHeader,
   IonInput,
   IonItem,
   IonLabel,
   IonList,
+  IonModal,
   IonPage,
+  IonSpinner,
+  IonTitle,
+  IonToolbar,
 } from "@ionic/react";
-import React, { useState } from "react";
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useUser } from "../../context/User";
 import { auth } from "../../firebase";
 import "./register.css";
 // import "./login.css";
-import Box from "@mui/material/Box";
-import Modal from "@mui/material/Modal";
 
 const style = {
   position: "absolute" as "absolute",
@@ -37,6 +48,7 @@ interface userData {
 }
 
 function Login({}: Props) {
+  const { setUser } = useUser();
   const [formData, setFormData] = useState<userData>({
     email: "",
     password: "",
@@ -44,47 +56,71 @@ function Login({}: Props) {
 
   const [restorationEmail, setRestorationEmail] = useState<string>("");
 
-  const [open, setOpen] = useState<boolean>(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  // ionic modal
+  const modal = useRef<HTMLIonModalElement>(null);
+  const input = useRef<HTMLIonInputElement>(null);
+
+  function confirm() {
+    modal.current?.dismiss(input.current?.value, "confirm");
+  }
+
+  // end of ionic modal
 
   const history = useHistory();
 
-  const signIn = (e: React.FormEvent<HTMLElement>) => {
+  const signIn = async (e: React.FormEvent<HTMLElement>) => {
     e.preventDefault();
     const { email, password } = formData;
 
     if (!email || !password) {
-      toast.error("Please enter your informations", {
-        toastId: "error1",
-      });
+      return toast.error("Veuillez remplir les deux entrées");
     }
+    try {
+      setIsSigningIn(true);
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      setUser(user);
 
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(() => {
-        auth.onAuthStateChanged((user) => {
-          localStorage.setItem("user", JSON.stringify(user));
-        });
-        history.push("/game");
-      })
-      .catch((err) => {
-        toast(err);
+      console.log("useeer", user);
+
+      toast.success("Login réussie, vous rediriger maintenant...", {
+        autoClose: 2000,
       });
+      setTimeout(() => history.push("/quiz"), 2002);
+    } catch (error: any) {
+      setIsSigningIn(false);
+
+      switch (error.code) {
+        case "auth/wrong-password":
+          toast.error("Mot de passe incorrect");
+          break;
+        case "auth/user-not-found":
+          toast.error("Aucun utilisateur n'existe avec cet e-mail");
+          break;
+
+        default:
+          toast.error("Quelque chose s'est mal passé");
+          break;
+      }
+      console.log(error);
+    }
   };
 
-  const resetPassword = () => {
-    if (!restorationEmail) {
-      toast.error("Please Enter the email to send you a restoration link", {
-        toastId: "error1",
-      });
+  const resetPassword = async () => {
+    if (!restorationEmail) return;
+    try {
+      await sendPasswordResetEmail(auth, restorationEmail);
+      confirm();
+      toast.success(
+        `Le lien de restauration a été envoyé à ${restorationEmail}`
+      );
+    } catch (error: any) {
+      confirm();
+      if (error.code == "auth/user-not-found")
+        return toast.error("Aucun utilisateur n'existe avec cet e-mail");
+      toast.error("Quelque chose s'est mal passé, réessayez plus tard");
     }
-    auth.sendPasswordResetEmail(restorationEmail).then(() => {
-      toast.success(`Restoration Link has been sent to ${restorationEmail}`, {
-        toastId: "success1",
-      });
-      setOpen(false);
-    });
   };
 
   return (
@@ -93,7 +129,7 @@ function Login({}: Props) {
         <h2>Sign In</h2>
         <IonList>
           <IonItem>
-            <IonLabel>E-mail</IonLabel>
+            <IonLabel position="floating">E-mail</IonLabel>
             <IonInput
               value={formData.email}
               onIonChange={(e: CustomEvent) => {
@@ -105,7 +141,7 @@ function Login({}: Props) {
             ></IonInput>
           </IonItem>
           <IonItem>
-            <IonLabel>Password</IonLabel>
+            <IonLabel position="floating">Password</IonLabel>
             <IonInput
               type="password"
               value={formData.password}
@@ -119,41 +155,59 @@ function Login({}: Props) {
           </IonItem>
         </IonList>
         <p
+          id="open-modal"
           style={{ textDecoration: "underline", cursor: "pointer" }}
-          onClick={handleOpen}
         >
-          Forget You Password?
+          Mot de passe oublié?
         </p>
-        <IonButton type="submit" expand="block">
-          Sign In
+        <IonButton disabled={isSigningIn} type="submit" expand="block">
+          {isSigningIn ? (
+            <IonSpinner name="crescent"></IonSpinner>
+          ) : (
+            "Se connecter"
+          )}
         </IonButton>
-        <p>
-          Don't have an account yet? <Link to={"/register"}>Sign Up</Link>
-        </p>
       </form>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <p>Enter You email</p>
+      <IonModal ref={modal} trigger="open-modal">
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton onClick={() => modal.current?.dismiss()}>
+                Cancel
+              </IonButton>
+            </IonButtons>
+            <IonTitle size="small">Réinitialiser le mot de passe</IonTitle>
+            <IonButtons slot="end">
+              <IonButton strong={true} onClick={resetPassword}>
+                Confirm
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
           <IonItem>
+            <IonLabel position="floating">Email</IonLabel>
             <IonInput
-              type="email"
               value={restorationEmail}
               onIonChange={(e: CustomEvent) => {
                 setRestorationEmail((e.target as HTMLInputElement).value);
               }}
               placeholder="example@gmail.com"
-            ></IonInput>
+            />
           </IonItem>
-          <IonButton type="submit" expand="block" onClick={resetPassword}>
-            Sign In
+          <IonButton expand="block" onClick={resetPassword}>
+            Réinitialiser le mot de passe
           </IonButton>
-        </Box>
-      </Modal>
+        </IonContent>
+      </IonModal>
+      <IonFooter>
+        <IonToolbar>
+          <IonTitle>
+            Pas de compte? <br />
+            <Link to={"/register"}>Inscription</Link>
+          </IonTitle>
+        </IonToolbar>
+      </IonFooter>
     </IonPage>
   );
 }

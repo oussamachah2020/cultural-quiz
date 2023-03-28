@@ -24,28 +24,41 @@ import "./theme/variables.css";
 import Register from "./pages/Auth/Register";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Game from "./pages/Game";
 import Login from "./pages/Auth/Login";
+import Quizz from "./pages/Quizz";
+import PrivateRoute from "./components/PrivateRoute";
+import QuizResults from "./pages/QuizResults";
+import { useUser } from "./context/User";
 
 setupIonicReact();
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-        <Route exact path="/register" component={Register} />
-        <Route exact path="/login" component={Login} />
-        <Route exact path="/game" component={Game} />
-      </IonRouterOutlet>
-      <ToastContainer />
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  const { user } = useUser();
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          {/* public routes */}
+          <Route
+            exact
+            path="/"
+            render={() => (user ? <Redirect to="/quiz" /> : <Home />)}
+          />
+          <Route exact path="/register" component={Register} />
+          <Route exact path="/login" component={Login} />
+
+          {/* private routes */}
+          <PrivateRoute exact path="/quiz" component={Quizz}></PrivateRoute>
+          <PrivateRoute
+            exact
+            path="/quiz/results"
+            component={QuizResults}
+          ></PrivateRoute>
+        </IonRouterOutlet>
+        <ToastContainer />
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 export default App;
