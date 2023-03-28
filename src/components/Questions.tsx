@@ -2,7 +2,11 @@ import {
   IonButton,
   IonCard,
   IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
   IonCol,
+  IonContent,
   IonGrid,
   IonIcon,
   IonRow,
@@ -19,13 +23,22 @@ type SelectedAnswer = {
   answerIndex: number;
 };
 
-const Questions: React.FC = () => {
+interface QuestionsProps {
+  setStartedQuizz: (newValue: boolean) => void;
+  selectedCity: string;
+}
+
+const Questions: React.FC<QuestionsProps> = ({
+  setStartedQuizz,
+  selectedCity,
+}) => {
   const history = useHistory();
-  const { userCity } = useUser();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswer[]>([]);
-  const questions = quizData.find((data) => data.city === userCity)?.questions;
+  const questions = quizData.find(
+    (data) => data.city === selectedCity
+  )?.questions;
 
   useEffect(() => {
     console.log("scoore", score);
@@ -87,8 +100,8 @@ const Questions: React.FC = () => {
                     <IonButton
                       color={
                         selectedAnswerIndex === answerIndex
-                          ? "primary"
-                          : "medium"
+                          ? "success"
+                          : "primary"
                       }
                       size="small"
                       onClick={() => handleAnswerClick(answerIndex)}
@@ -111,6 +124,19 @@ const Questions: React.FC = () => {
             <IonIcon icon={chevronBack}></IonIcon>précédent
           </IonButton>
         )}
+        {currentQuestionIndex == 0 && (
+          <IonButton
+            onClick={() => {
+              setSelectedAnswers([]);
+              setStartedQuizz(false);
+            }}
+            className="ion-margin"
+            size="small"
+            fill="outline"
+          >
+            Cancel
+          </IonButton>
+        )}
       </>
     );
   };
@@ -125,7 +151,7 @@ const Questions: React.FC = () => {
           )}
         </>
       ) : (
-        <div>No questions found for {userCity}</div>
+        <div>No questions found for {selectedCity}</div>
       )}
     </>
   );

@@ -1,13 +1,21 @@
 import {
   IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
   IonContent,
   IonHeader,
+  IonItem,
+  IonLabel,
+  IonList,
   IonPage,
+  IonRadio,
+  IonRadioGroup,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { useUser } from "../context/User";
 import { Geolocation } from "@capacitor/geolocation";
 import Questions from "../components/Questions";
@@ -18,6 +26,22 @@ const Quizz = ({}: Props) => {
   const { user, setUserCity, userCity } = useUser();
   const [refusedLocationAccess, setRefusedLocationAccess] = useState(false);
 
+  const [startedQuizz, setStartedQuizz] = useState(false);
+  const [canUserAnswer, setCanUserAnswer] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [allowedCities, setAllowedCities] = useState([
+    "Meknes",
+    "Rabat",
+    "Oujda",
+    "Seba Ayoun",
+  ]);
+
+  useEffect(() => {
+    console.log("selected city", selectedCity);
+  }, [selectedCity]);
+  const handleCityChange = (event: CustomEvent) => {
+    setSelectedCity(event.detail.value);
+  };
   const getUserCity = async () => {
     try {
       const { coords } = await Geolocation.getCurrentPosition();
@@ -29,16 +53,13 @@ const Quizz = ({}: Props) => {
       const response = await fetch(geocodingApiUrl);
       const data = await response.json();
       const city = data.results[0].address_components[1].long_name;
-
+      setUserCity(city);
       console.log("user city", city);
 
-      if (["Rabat", "Meknes", "Oujda", "Seba Ayoun"].includes(city))
-        return setUserCity(city);
-
-      toast.error(
-        `Désolé, vous ne pouvez pas répondre à notre quiz car vous n'habitez pas à Rabat, Meknès ou Oujda. Votre ville actuelle est ${city}.`,
-        { autoClose: 5000 }
-      );
+      if (["Meknes", "Rabat", "Oujda"].includes(city)) {
+        setCanUserAnswer(true);
+        setAllowedCities((prevCities) => prevCities.filter((c) => c !== city));
+      }
     } catch (error) {
       console.error(error);
       setRefusedLocationAccess(true);
@@ -63,16 +84,68 @@ const Quizz = ({}: Props) => {
     return <IonPage>Loading city... </IonPage>;
   }
 
+  if (!canUserAnswer) {
+    return (
+      <IonPage>
+        You currently live in {userCity} which is not meknes, oujda or rabat, so
+        you cant answer our quizz
+      </IonPage>
+    );
+  }
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Welcome to the {userCity} quiz!</IonTitle>
+          <IonTitle>Bienvenue au quiz de la ville !</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        <Questions />
+        {startedQuizz ? (
+          <Questions
+            selectedCity={selectedCity}
+            setStartedQuizz={setStartedQuizz}
+          />
+        ) : (
+          <IonCard className="quiz-card">
+            <IonCardHeader>
+              <IonCardTitle>
+                Répondez à 80% des questions et vous obtenez des vacances dans
+                la ville de votre choix
+              </IonCardTitle>
+            </IonCardHeader>
+
+            <IonCardContent className="ion-margin-bottom">
+              <h4>
+                Choisissez la ville dans laquelle vous souhaitez répondre aux
+                questions:
+              </h4>
+              <IonList>
+                <IonRadioGroup
+                  value={selectedCity}
+                  onIonChange={handleCityChange}
+                >
+                  {allowedCities.map((city, idx) => (
+                    <IonItem key={idx}>
+                      <IonLabel>{city}</IonLabel>
+                      <IonRadio slot="end" value={city}></IonRadio>
+                    </IonItem>
+                  ))}
+                </IonRadioGroup>
+              </IonList>
+
+              <IonButton
+                className="ion-margin-top"
+                expand="block"
+                disabled={selectedCity ? false : true}
+                onClick={() => setStartedQuizz(true)}
+              >
+                Démarrer le questionnaire
+              </IonButton>
+            </IonCardContent>
+          </IonCard>
+        )}
       </IonContent>
     </IonPage>
   );

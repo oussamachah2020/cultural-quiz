@@ -11,14 +11,41 @@ import { checkmarkCircle } from "ionicons/icons";
 import { useHistory, useLocation } from "react-router-dom";
 
 const QuizResults: React.FC = () => {
-  const location = useLocation<{ score: number; scorePercentage: number }>();
-  const { score, scorePercentage } = location.state;
+  // const location = useLocation<{
+  //   score: number | undefined;
+  //   scorePercentage: number | undefined;
+  // }>();
+
+  const location = useLocation<any>();
+  const score = location.state?.score;
+  const scorePercentage = location.state?.scorePercentage;
   const history = useHistory();
   const handleRetakeQuizClick = () => {
     // navigate back to the quiz page
     history.push(`/quiz`);
   };
-
+  if (!score || !scorePercentage) {
+    return (
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Quiz Results</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          <h2 style={{ marginTop: "20px" }}>
+            il semble que vous n'ayez pas encore répondu à ce quiz
+          </h2>
+          <IonButton
+            onClick={handleRetakeQuizClick}
+            style={{ marginTop: "20px" }}
+          >
+            Take Quiz
+          </IonButton>
+        </IonContent>
+      </IonPage>
+    );
+  }
   return (
     <IonPage>
       <IonHeader>
@@ -46,20 +73,8 @@ const QuizResults: React.FC = () => {
                     : "var(--ion-color-danger)",
               }}
             />
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>{scorePercentage}%</h2>
-            </div>
+
+            <h2>{scorePercentage}%</h2>
           </div>
         </div>
         {scorePercentage >= 80 ? (
