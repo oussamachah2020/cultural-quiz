@@ -11,11 +11,12 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useUser } from "../../context/User";
-import { auth } from "../../firebase";
+import { auth, db } from "../../firebase";
 import "./register.css";
 
 type Props = {};
@@ -62,7 +63,10 @@ function Register({}: Props) {
       });
       setUser(user);
       console.log("useeer", user);
-
+      await addDoc(collection(db, "users"), {
+        fullName,
+        email,
+      });
       toast.success("Inscription réussie, vous rediriger maintenant...", {
         autoClose: 2000,
       });

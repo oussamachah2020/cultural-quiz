@@ -77,6 +77,7 @@ const Questions: React.FC<QuestionsProps> = ({
       history.push("/quiz/results", {
         score,
         scorePercentage,
+        selectedCity,
       });
     }
   };

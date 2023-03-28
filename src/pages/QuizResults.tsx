@@ -7,8 +7,11 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
+import { addDoc, collection } from "firebase/firestore";
 import { checkmarkCircle } from "ionicons/icons";
 import { useHistory, useLocation } from "react-router-dom";
+import { db } from "../firebase";
+import getRandomHotelInCity from "../hotels/getRandomHotelInCity";
 
 const QuizResults: React.FC = () => {
   // const location = useLocation<{
@@ -19,11 +22,26 @@ const QuizResults: React.FC = () => {
   const location = useLocation<any>();
   const score = location.state?.score;
   const scorePercentage = location.state?.scorePercentage;
+  const selectedCity = location.state?.selectedCity;
   const history = useHistory();
+  const postTrip = async () => {
+    const hotel = getRandomHotelInCity(selectedCity);
+
+    await addDoc(collection(db, "trips"), {
+      percent: scorePercentage,
+      hotelName: hotel?.name,
+      ...hotel,
+    });
+  };
+  if (scorePercentage && scorePercentage >= 80) {
+    postTrip();
+  }
+
   const handleRetakeQuizClick = () => {
     // navigate back to the quiz page
     history.push(`/quiz`);
   };
+
   if (!score || !scorePercentage) {
     return (
       <IonPage>

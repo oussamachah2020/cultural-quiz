@@ -56,7 +56,7 @@ const Quizz = ({}: Props) => {
       setUserCity(city);
       console.log("user city", city);
 
-      if (["Meknes", "Rabat", "Oujda"].includes(city)) {
+      if (["Meknes", "Rabat", "Oujda", "Seba Ayoun"].includes(city)) {
         setCanUserAnswer(true);
         setAllowedCities((prevCities) => prevCities.filter((c) => c !== city));
       }
