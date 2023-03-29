@@ -52,15 +52,27 @@ const Quizz = ({}: Props) => {
       const geocodingApiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`;
       const response = await fetch(geocodingApiUrl);
       const data = await response.json();
-      const city = data.results[0].address_components[1].long_name;
-      setUserCity(city);
+
+      console.log("api data", data);
+
+      const city = allowedCities.find((c) =>
+        data.results[0].address_components
+          .map((e: any) => e.long_name.toLowerCase())
+          .includes(c.toLowerCase())
+      );
+
       console.log("user city", city);
 
-      if (["Meknes", "Rabat", "Oujda", "Seba Ayoun"].includes(city)) {
+      if (city) {
+        setUserCity(city);
         setCanUserAnswer(true);
         setAllowedCities((prevCities) => prevCities.filter((c) => c !== city));
+      } else {
+        setCanUserAnswer(false);
       }
     } catch (error) {
+      console.log("catch ran");
+
       console.error(error);
       setRefusedLocationAccess(true);
     }
@@ -81,7 +93,11 @@ const Quizz = ({}: Props) => {
     );
   }
   if (!userCity) {
-    return <IonPage>Loading city... </IonPage>;
+    return (
+      <IonPage>
+        <p className="my-unique-class">Loading city...</p>{" "}
+      </IonPage>
+    );
   }
 
   if (!canUserAnswer) {

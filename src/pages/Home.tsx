@@ -14,15 +14,16 @@ const Home: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Cutlural Quiz</IonTitle>
+          <IonTitle>Cultural Quiz</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <div className="container">
-          <h2>Welcome to this cultural quiz</h2>
-          <p>
-            Start by <Link to={"/login"}>Sign In</Link> or{" "}
-            <Link to={"/register"}>Sign Up</Link>
+          <h2>Bienvenue à ce quiz culturel</h2>
+          <p style={{ textAlign: "center" }}>
+            Commencez par <Link to={"/login"}>vous connecter</Link> ou
+            <Link to={"/register"}> vous inscrire</Link> pour tenter de gagner
+            un voyage dans un hôtel aléatoire dans la ville de votre choix.
           </p>
         </div>
       </IonContent>
