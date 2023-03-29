@@ -2,7 +2,7 @@ import { QuizData } from "../types/quiz";
 
 const questions: QuizData[] = [
   {
-    city: "Seba Ayoun",
+    city: "Meknes",
     questions: [
       {
         question:
@@ -85,13 +85,13 @@ const questions: QuizData[] = [
         correctAnswerIndex: 1,
       },
       {
-        question: "What is the name of the palace located in Meknes?",
+        question: "What is the name of the palace located in Rabat?",
         answers: ["Bahia Palace", "El Badi Palace", "Dar el Makhzen"],
         correctAnswerIndex: 2,
       },
       {
         question:
-          "What is the name of the mausoleum in Meknes that houses the tombs of Moulay Ismail and his family?",
+          "What is the name of the mausoleum in Rabat that houses the tombs of Moulay Ismail and his family?",
         answers: [
           "Hassan Tower",
           "Mausoleum of Mohammed V",

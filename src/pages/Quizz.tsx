@@ -33,7 +33,6 @@ const Quizz = ({}: Props) => {
     "Meknes",
     "Rabat",
     "Oujda",
-    "Seba Ayoun",
   ]);
 
   useEffect(() => {

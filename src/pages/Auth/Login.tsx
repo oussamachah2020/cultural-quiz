@@ -22,7 +22,7 @@ import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useUser } from "../../context/User";
-import { auth } from "../../firebase";
+import { auth, signWithGoogle } from "../../firebase";
 import "./register.css";
 // import "./login.css";
 
@@ -87,6 +87,8 @@ function Login({}: Props) {
       toast.success("Login réussie, vous rediriger maintenant...", {
         autoClose: 2000,
       });
+      setIsSigningIn(false);
+
       setTimeout(() => history.push("/quiz"), 2002);
     } catch (error: any) {
       setIsSigningIn(false);
@@ -121,6 +123,11 @@ function Login({}: Props) {
         return toast.error("Aucun utilisateur n'existe avec cet e-mail");
       toast.error("Quelque chose s'est mal passé, réessayez plus tard");
     }
+  };
+
+  const handleGoogleLogin = () => {
+    signWithGoogle();
+    history.push("/quiz");
   };
 
   return (
@@ -200,6 +207,9 @@ function Login({}: Props) {
           </IonButton>
         </IonContent>
       </IonModal>
+      <IonButton color="light" expand="block" onClick={handleGoogleLogin}>
+        Sign In with google
+      </IonButton>
       <IonFooter>
         <IonToolbar>
           <IonTitle>

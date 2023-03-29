@@ -36,6 +36,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        console.log("useerer", user);
       }
       setIsLoadingUser(false);
     });
